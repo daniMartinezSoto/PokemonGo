@@ -13,15 +13,15 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import model.Entrenador;
-import model.EntrenadorDao;
+import model.EntrenadorDAO;
 
 /**
  *
  * @author dama0501
  */
 public class PokemonGo {
-Scanner sc = new Scanner(System.in);
-EntrenadorDao entrenadores;
+    Scanner sc;
+    EntrenadorDAO entrenadores;
     /**
      * @param args the command line arguments
      */
@@ -33,16 +33,10 @@ EntrenadorDao entrenadores;
 
       /* la ejecucion programa*/
     private void run() {
-    try {
-        entrenadores = new EntrenadorDao();
+        
         mostrarCaratula();
+        login();
         mostrarMenu();
-        
-        
-    
-    } catch (SQLException ex) {
-        Logger.getLogger(PokemonGo.class.getName()).log(Level.SEVERE, null, ex);
-    }
         
     }
 
@@ -52,7 +46,7 @@ EntrenadorDao entrenadores;
         int opcion;
         
         // Mostrar el menú
-            System.out.println("----- Menu -----");
+            System.out.println("----- Menú -----");
             System.out.println("0.- Salir");
             System.out.println("1.- Dar de alta entrenador");
             System.out.println("2.- Dar de baja entrenador");
@@ -98,39 +92,31 @@ EntrenadorDao entrenadores;
     }
 
     private void darDeAltaEntrenador() {
-    try {
         System.out.println("Has escogido Dar de alta entrenador");
-        
-        //PIDE DATOS AL USUARIO PARA PODER DAR DE ALTA A UN ENTRENADOR
-        sc = new Scanner(System.in);
-        int insertado;
-        System.out.println("PON EL NOMBRE DEL NUEVO ENTRENADOR");
-        String newName= sc.nextLine();
-        System.out.println("PON EL PASSWORD");
-        String newPassword= sc.nextLine();
-        Entrenador nuevo = new Entrenador(newName, newPassword);
-        
-        insertado = entrenadores.altaEntrenador(nuevo);
-        
-        if (insertado>0) {
-            System.out.println("se ha insertado un entrenador");
+        try {
+            sc = new Scanner(System.in);
+            int insertado ;
+            System.out.println("Pon el nombre del nuevo entrenador");
+            String nombre = sc.nextLine();
+            System.out.println("Pon el password");
+            String password = sc.nextLine();
+            Entrenador nuevo = new Entrenador(nombre, password);
+            //llamar al dao existeEntrenador
+            //if.... 
+            insertado = entrenadores.altaEntrenador(nuevo);
+            if (insertado > 0)
+            {
+                System.out.println("Se ha insertado el nuevo entrenador ");
+            }
+            else
+            {
+                System.out.println("Error insertando entrenador");
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error SQL insertando entrenador" + ex.getMessage());
         }
-        else{
-            System.out.println("Error: no insertado");
-        }
-        
-    } catch (SQLException ex) {
-        System.out.println("Error SQL INSERTANDO ENTRENADOR");
     }
-        
-    }
-//******************************************************************************
-    
-    
-    
-    
-    
-    
+
     private void darDeBajaEntrenador() {
         System.out.println("Has escogido dar de baja entrenador");
     }
@@ -152,24 +138,36 @@ EntrenadorDao entrenadores;
     }
 
     private void mostrarCaratula() {
+        
          try {
             /*mostrar caratula*/
             /*recuperar datos fichero de caratula*/
             
             Caratula portada = new Caratula("ficheros/logo.pok");
              
-            
             ArrayList<String> lineasDelLogo = portada.recuperarDatos();
-            
              for (String linea : lineasDelLogo) {
                 System.out.println(linea);
             }
 
-             
         } catch (FileNotFoundException ex) {
-             System.out.println("FICHERO NO ENCONTRADO");
+            Logger.getLogger(PokemonGo.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-             System.out.println("Erro de fichero");
-            }
+            Logger.getLogger(PokemonGo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }
+
+    private void login() {
+        sc = new Scanner(System.in);
+        
+        System.out.print("Por favor, introduce tu nombre de usuario: ");
+        String nombreUsuario = sc.nextLine();
+        
+        // Solicitar la contraseña
+        System.out.print("Ahora, introduce tu contraseña: ");
+        String password = sc.nextLine();
+        
+        
     }
 }

@@ -8,49 +8,36 @@ import java.util.Objects;
 
 /**
  *
- * @author dama0501
+ * @author mabardaji
  */
 public class Entrenador {
-    
-    //ATRIBUTOS
     private int id;
     private String name;
     private String password;
 
-    //CONSTRUCTOR
-    public Entrenador(int id, String nombre, String password) {
+    public Entrenador(int id, String name, String password) {
         this.id = id;
-        this.name = nombre;
-        this.password = password;
-    }
-    
-    //ID AUTOINCREMENTAL:
-    public Entrenador(String nombre, String password) {
-        this.name = nombre;
+        this.name = name;
         this.password = password;
     }
 
-    //PENDIENTE--> ARREGLAR TOSTRING
-    @Override
-    public String toString() {
-        return "Entrenador{" + "id=" + id + ", nombre=" + name + ", password=" + password + '}';
+    public Entrenador(String name, String password) {
+        this.id = 0;
+        this.name = name;
+        this.password = password;
     }
-    
-    
-    
-    
-     // Getters y setters
+
     public int getId() {
         return id;
     }
 
 
-    public String getNombre() {
+    public String getName() {
         return name;
     }
 
-    public void setNombre(String nombre) {
-        this.name = nombre;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getPassword() {
@@ -61,9 +48,12 @@ public class Entrenador {
         this.password = password;
     }
 
-    
-    
-    //EQUALS
+    @Override
+    public String toString() {
+        return "El entrenador " + name + " tiene el password " + password;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -75,17 +65,9 @@ public class Entrenador {
             return false;
         }
         final Entrenador other = (Entrenador) obj;
-        if (this.id != other.id) {
-            return false;
-        }
-        return Objects.equals(this.name, other.name);
+        
+        return this.name.equalsIgnoreCase(other.name);
     }
-    
-    
-   //OTRAS FUNCIONES
- 
-    
-    
     
     
     
