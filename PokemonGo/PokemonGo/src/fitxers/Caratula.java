@@ -37,17 +37,9 @@ public class Caratula {
             lineas.add(linea);
         }
         
-        this.cerrar();
         return lineas;
     }
     
     
-    
-    
-    
-    public void cerrar() throws IOException{
-    reader.close();
-    fichero.close();
-    }
     
 }
