@@ -6,49 +6,68 @@ package model;
 
 /**
  *
- * @author dama0501
+ * @author mabardaji
  */
 public class Pokemon {
-    
-    //ATRIBUTOS
-    private int numPok;
+    private int num_id;
     private String nombre;
-    private String tipo;
+    private String type;
 
-    // Constructor
-    public Pokemon(int numPok, String nombre, String tipo) {
-        this.numPok = numPok;
+    public Pokemon(int num_id, String nombre, String type) {
+        this.num_id = num_id;
         this.nombre = nombre;
-        this.tipo = tipo;
+        this.type = type;
     }
 
-    
-    // Getters y setters
-    public int getNumPok() {
-        return numPok;
-    }
-
-    public void setNumPok(int numPok) {
-        this.numPok = numPok;
+    public int getNum_id() {
+        return num_id;
     }
 
     public String getNombre() {
         return nombre;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setNum_id(int num_id) {
+        this.num_id = num_id;
+    }
+
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
 
-    public String getTipo() {
-        return tipo;
+    public void setType(String type) {
+        this.type = type;
     }
 
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
+    @Override
+    public String toString() {
+        return "falta modificar " + this.nombre;
     }
 
-    //OTRAS FUNCIONES
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof Pokemon)) {
+            return false;
+        }
+        final Pokemon other = (Pokemon) obj;
+        return this.num_id == other.num_id;
+    }
+    
+    
+    
+    
     
     
     

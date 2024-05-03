@@ -5,18 +5,15 @@
 package model;
 
 import BD.DBConnect;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.PreparedStatement;
-import java.util.List;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 /**
  *
  * @author mabardaji
  */
 public class EntrenadorDAO {
-    //atribut per la conexi
+    //atribut per la conexi�
     Connection conn_principal;
 
     public EntrenadorDAO() throws SQLException {
@@ -37,14 +34,21 @@ public class EntrenadorDAO {
                         + "(name, password) "
                         + " VALUES"
                         + " (?,?)"; //id no informat perque es autoincremental
-            //verificacio
-            System.out.println("prueba Query-->"+query); //s'ha de treure quant funcioni 
+            if (!this.existeEntrenador(trainer.getName()))
+            {
+                System.out.println(query); //s'ha de treure quant funcioni 
             
-            PreparedStatement preparedQuery = conn_principal.prepareStatement(query);
+                PreparedStatement preparedQuery = conn_principal.prepareStatement(query);
             
-            preparedQuery.setString(1, trainer.getName());
-            preparedQuery.setString(2,trainer.getPassword());
-            rows = preparedQuery.executeUpdate();   
+                preparedQuery.setString(1, trainer.getName().toUpperCase());
+                preparedQuery.setString(2,trainer.getPassword());
+                rows = preparedQuery.executeUpdate();
+            }
+            else
+            {
+                rows = 0; //no dado de alta
+            }
+               
         }
         
         return rows;
@@ -59,26 +63,39 @@ public class EntrenadorDAO {
      */
     public boolean existeEntrenador(String name) throws SQLException
     {
-       boolean existe = false;
-    
-    if (conn_principal != null) {
-        
-        Statement stmt = conn_principal.createStatement();
-        String query = "id, name, password"
-                +"from entrenadors where UPPER(name)"
-                +"= '"+name.toUpperCase()+"'";
-        
-        ResultSet cursor = stmt.executeQuery(query);
-        
-        
-        if (cursor.next()) {
-            return true;
+        if (conn_principal!=null)
+        {
+            Statement stmt = conn_principal.createStatement();
+            String query = "Select id, name, password"
+                    + " from entrenadors where UPPER(name)"
+                    + " = '" + name.toUpperCase() + "'";
+            
+            String query2 = "Select count(*) "
+                    + " from entrenadors where UPPER(name)"
+                    + " = '" + name.toUpperCase() + "'";
+            
+            //System.out.println(query2);
+            ResultSet cursor = stmt.executeQuery(query2);
+            if (cursor.next())
+            {
+                int registros = cursor.getInt(1);
+                if (registros==1)
+                {
+                    return true;    
+                }
+                else
+                {
+                    return false;
+                }
+                
+            }
+            else
+            {
+                return false;
+            }
         }
-        else{
-            return false;
-        }     
-    }
-    return existe;
+        return false;
+        
     }
     
     
@@ -90,26 +107,29 @@ public class EntrenadorDAO {
      * @param name
      * @return 
      */
-    public boolean esborrarEntrenador(String name) throws SQLException
+    public Entrenador esborrarEntrenador(String name) throws SQLException
     {
-         boolean borradoExitoso = false;
-    
-    if (conn_principal != null) {
-        String query = "DELETE FROM entrenador WHERE name = ?";
-        
-        PreparedStatement preparedQuery = conn_principal.prepareStatement(query);
-        preparedQuery.setString(1, name);
-        
-        int rowsAffected = preparedQuery.executeUpdate();
-        
-        if (rowsAffected > 0) {
-            borradoExitoso = true;
+        if (this.existeEntrenador(name))
+        {
+            Entrenador borrar = this.devolverEntrenador(name);
+            
+            Statement stmt = conn_principal.createStatement();
+            String query = "Delete "
+                    + " from entrenadors where upper(name) = '" + name.toUpperCase() + "'";
+            
+            int row = stmt.executeUpdate(query);
+            if (row>0)
+            {
+                return borrar;
+            }
+            else
+            {
+                return null;
+            }
+            
         }
-        
-        preparedQuery.close();
-    }
-    
-    return borradoExitoso;
+        else
+            return null;
     }
     
     
@@ -118,32 +138,27 @@ public class EntrenadorDAO {
      * @return 
      */
     public List<Entrenador> totsEntrenadors() throws SQLException
-            {    
-        
+    {
         List<Entrenador> all_trainers = null;
-        
-        if (conn_principal != null) {
+        if (conn_principal!=null)
+        {
+            Statement stmt = conn_principal.createStatement();
+            String query = "Select id, name, password"
+                    + " from entrenadors";
             
-        
-        
-        Statement stmt = conn_principal.createStatement();
-        
-        String query = "SELECT id, name, password FROM entrenadors";
-        
-        ResultSet cursor = stmt.executeQuery(query);
-        all_trainers = new ArrayList<>();
-            System.out.println("query-->"+query);
-        while(cursor.next()){
-            String nom = cursor.getString("name");
-            String contraseña= cursor.getString("password");
-            int id = cursor.getInt("id");
-            
-            all_trainers.add(new Entrenador(id, nom, contraseña));
+            ResultSet cursor = stmt.executeQuery(query);
+            all_trainers = new ArrayList<>();
+            while(cursor.next())
+            {
+                String nom = cursor.getString("name");
+                String contrasenya = cursor.getString("password");
+                int id = cursor.getInt("id");
+//                Entrenador nuevo = new Entrenador(id, nom, contrasenya);
+//                all_trainers.add(nuevo);
+                all_trainers.add(new Entrenador(id, nom, contrasenya));
+            }
+             cursor.close();
         }
-        
-        return all_trainers;
-        }
-      
         return all_trainers;
     }
     
@@ -155,18 +170,33 @@ public class EntrenadorDAO {
      */
     public Entrenador devolverEntrenador(String name) throws SQLException
     {
-        Statement stmt = conn_principal.createStatement();
+        if (conn_principal!=null)
+        {
+            Statement stmt = conn_principal.createStatement();
+            String query = "Select id, name, password"
+                    + " from entrenadors where UPPER(name)"
+                    + " = '" + name.toUpperCase() + "'";
+            ResultSet cursor = stmt.executeQuery(query);
+            if (cursor.next()) //existe //FETCH
+            {
+                String nombre = cursor.getString("name");
+                String contrasenya = cursor.getString("password");
+                int id = cursor.getInt("id");
+                Entrenador encontrado = new Entrenador(id, nombre, contrasenya);
+                return encontrado;
+            }
+            else
+            {
+                //return new Entrenador(0,"","");
+                return null;
+            }
+            
+        }
+        else
+        {
+            return null;
+        }
         
-        String query = "SELECT id, name, password FROM entrenadors WHERE name = '"
-                +name+"'";
-        
-        
-        
-        
-        
-        
-        
-        return null;
     }
     
     
