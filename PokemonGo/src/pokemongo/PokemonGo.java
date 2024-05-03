@@ -4,11 +4,13 @@
  */
 package pokemongo;
 
+import BD.DBConnect;
 import fitxers.Caratula;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,9 +36,22 @@ public class PokemonGo {
       /* la ejecucion programa*/
     private void run() {
         
-        mostrarCaratula();
-        login();
-        mostrarMenu();
+        try {
+            DBConnect.loadDriver();
+            mostrarCaratula();
+            
+            entrenadores = new EntrenadorDAO();
+            
+            //login();
+            mostrarMenu();
+            
+            
+            
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(PokemonGo.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(PokemonGo.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
     }
 
@@ -52,14 +67,14 @@ public class PokemonGo {
             System.out.println("2.- Dar de baja entrenador");
             System.out.println("3.- Consultar entrenador");
             System.out.println("4.- Cazar pokemon");
-            System.out.println("5.- Listar Pokemons cazados");
+            System.out.println("5.- Listar Entrenadores");
             System.out.println("6.- Listar tipos Pokemon existentes en juego");
             System.out.println("***********************");
             System.out.print("Elige una opción: ");
         
             opcion = scanner.nextInt();
             scanner.nextLine(); 
-        
+            
             switch (opcion) {
             
              case 0:
@@ -78,7 +93,7 @@ public class PokemonGo {
                     cazarPokemon();
                     break;
                 case 5:
-                    listarPokemonsCazados();
+                    listarEntrenadores();
                     break;
                 case 6:
                     listarTiposPokemon();
@@ -91,8 +106,10 @@ public class PokemonGo {
         
     }
 
-    private void darDeAltaEntrenador() {
-        System.out.println("Has escogido Dar de alta entrenador");
+    private void darDeAltaEntrenador() 
+    //HAY QUE APLICAR THIS.ExisteEntrenador AQUÍ PARA SABER SI YA EXISTE O NO
+   //E INFORMAR Y NO AÑADIR EN CASO DE QUE SEA TRUE;
+    {
         try {
             sc = new Scanner(System.in);
             int insertado ;
@@ -102,7 +119,7 @@ public class PokemonGo {
             String password = sc.nextLine();
             Entrenador nuevo = new Entrenador(nombre, password);
             //llamar al dao existeEntrenador
-            //if.... 
+            //if (entrenadores.existeEntrenador(nombre))
             insertado = entrenadores.altaEntrenador(nuevo);
             if (insertado > 0)
             {
@@ -110,11 +127,12 @@ public class PokemonGo {
             }
             else
             {
-                System.out.println("Error insertando entrenador");
+                System.out.println("Error insertando entrenador puede que exista ya con el nombre " + nombre);
             }
         } catch (SQLException ex) {
             System.out.println("Error SQL insertando entrenador" + ex.getMessage());
         }
+        
     }
 
     private void darDeBajaEntrenador() {
@@ -129,8 +147,26 @@ public class PokemonGo {
         System.out.println("has escogido cazar pokemon!");
     }
 
-    private void listarPokemonsCazados() {
-        System.out.println("has escogido listar Pokemons cazados");
+    private void listarEntrenadores() {
+        try {
+            System.out.println("has escogido listar entrenadores");
+            //Lo de siempre. 1.pedir usuario 2.interaccionDao 3.informar usuario
+
+            List<Entrenador> todos = entrenadores.totsEntrenadors();
+            
+            for (Entrenador trainer : todos) {
+                System.out.println(trainer);
+            }
+            System.out.println("Numero de entrenadores:"+todos.size());
+            
+        } catch (SQLException ex) {
+            System.out.println("ERROR SQL");
+        }
+        
+        
+        
+        
+        
     }
 
     private void listarTiposPokemon() {
