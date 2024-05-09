@@ -64,5 +64,22 @@ public class PokemonDAO {
         
     }
     
+    public String getNombrePokemon(int num) throws SQLException
+    {
+        if (conn_principal!=null)
+        {
+            Statement stmt = conn_principal.createStatement();
+            String query = "Select name"
+                    + " from Pokedex where num = " + num;
+            
+            ResultSet cursor = stmt.executeQuery(query);
+            if (cursor.next())
+            {
+                return cursor.getString(1);
+            }
+        }
+        return null;
+    }
+    
     
 }

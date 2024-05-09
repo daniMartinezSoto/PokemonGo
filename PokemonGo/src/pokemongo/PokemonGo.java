@@ -5,7 +5,7 @@
 package pokemongo;
 
 import BD.DBConnect;
-import fitxers.Caratula;
+import fitxers.FicheroAscii;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -16,11 +16,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import menuUtils.MenuDaw;
 import menuUtils.OptionDuplicateException;
+import model.Captura;
+import model.CapturaDAO;
 import model.Entrenador;
 import model.EntrenadorDAO;
 import model.Pokemon;
 import model.PokemonDAO;
-import model.MochilaDAO;
+
 /**
  *
  * @author mabardaji
@@ -30,14 +32,17 @@ public class PokemonGo {
     Scanner sc;
     EntrenadorDAO entrenadores;
     PokemonDAO pokedex;
+    CapturaDAO mochila;
     Entrenador login;
-    MochilaDAO mochila;
-
+    /**
+     * @param args the command line arguments
+     */
     public static void main(String[] args) {
         PokemonGo app = new PokemonGo();
         app.run();
     }
 
+    /* la ejecucion programa*/
     private void run() {
         
         try {
@@ -46,12 +51,13 @@ public class PokemonGo {
             DBConnect.loadDriver();
             entrenadores = new EntrenadorDAO();
             pokedex = new PokemonDAO();
-            mochila = new MochilaDAO();
-            //boolean user_valid = validar_usuari();
+            mochila = new CapturaDAO();
+            boolean user_valid;
+            user_valid = validar_usuari();
             //canviar a que devuelva String en lugar de boolean
             
             //login = recuperar_datos_entrenador();
-            boolean user_valid = true;
+            user_valid = true;
             if (user_valid)
             {
                 juego_valido();
@@ -68,14 +74,12 @@ public class PokemonGo {
 
     private void mostrarLogo()  {
         try {
-            Caratula logo = new Caratula("ficheros/logo.pok");
+        FicheroAscii logo = new FicheroAscii("ficheros/", "logo.pok");
             
             List<String> portada = logo.recuperarDatos();
             
-            for (String lineas : portada) {
-                System.out.println(lineas);
-            }
-            
+            mostrar_pantalla(portada);
+          
             
         } catch (FileNotFoundException ex) {
             System.out.println("Fichero no encontrado " + ex.getMessage());
@@ -161,49 +165,109 @@ public class PokemonGo {
     private void consultaEntrenador() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
-
+    
+    
+    public class ColoresUtilitarios {
+        
+    public static final String RESET = "\033[0m";  // Restablecer el color
+    public static final String RED = "\033[0;31m";  // Rojo
+    public static final String GREEN = "\033[0;32m";  // Verde
+    public static final String BLUE = "\033[0;34m";  // Azul
+}
+    
+    
+    
     private void cazarPokemon() {
         
         try {
             Pokemon aparecido = pokedex.getPokemonRandom();
-            String pokemonEncontrado=aparecido.getNombre();
-            String ruta="ficheros/"+pokemonEncontrado+".pok";
-            int atkPok= generarAtaque();
-            
             
             System.out.println(aparecido);
-            System.out.println("ATAQUE:"+atkPok);
-            Caratula pok = new Caratula(ruta);
-            List<String> portada = pok.recuperarDatos();
+            FicheroAscii pokemon_fichero = new FicheroAscii("pokemons/", aparecido.getNombre()+".pok");
+            List<String> lineas = pokemon_fichero.recuperarDatos();
+            boolean comprobarShiny;
             
-            for (String lineas : portada) {
-                System.out.println(lineas);
+            comprobarShiny=mostrar_pantalla(lineas);
+            
+            int CP = aparecido.getFuerzaCombate();
+            String shiny;
+            
+            if (comprobarShiny==true) {
+                shiny="si";
             }
+            else{shiny="no";}
             
-            mochila.darCaptura(1, aparecido.getNum_id(), atkPok);
+            System.out.println("Tiene Fuerza combate " + CP);
+            System.out.println("Entrenador " + login.getId());
+            System.out.println("pokemon " + aparecido.getNum_id());
+            
+            
+            mochila.darCaptura(login.getId(), aparecido.getNum_id(),CP,shiny);
+            System.out.println("Pokemon capturado en tu mochila");
+            
             
             
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(PokemonGo.class.getName()).log(Level.SEVERE, null, ex);
+            try {
+                FicheroAscii pokemon_fichero = new FicheroAscii("pokemons/", "default.pok");
+                List<String> lineas = pokemon_fichero.recuperarDatos();
+                mostrar_pantalla(lineas);
+            } catch (FileNotFoundException ex1) {
+                System.out.println(ex.getMessage());
+            } catch (IOException ex1) {
+                System.out.println(ex.getMessage());
+            }
         } catch (IOException ex) {
-            Logger.getLogger(PokemonGo.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println(ex.getMessage());
         }
         
     }
-    
-    public static int generarAtaque() {
-        Random rd = new Random();
-        int min = 1;
-        int max = 100;
-        int range = max - min + 1;
-        return rd.nextInt(range) + min;
-    }
+
     private void listarMochila() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        try {
+            //demanar usuario
+            
+            List<Captura> capturas = mochila.getPokemonsCapturat(login.getId());
+            for (Captura captura : capturas) {
+                
+                String nombre = pokedex.getNombrePokemon(captura.getNum_pokemon());
+                if (nombre!=null)
+                {
+                    System.out.println(nombre + "-" + captura.getCP());
+                }
+                
+            }
+            System.out.println("Tienes " + capturas.size() + " pokemons");
+        } catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+        }
     }
 
+    private void listarMochilaOrdenada() {
+        try {
+            //demanar usuario
+            
+            List<Captura> capturas = mochila.getPokemonsCapturatOrdenats(login.getId());
+            for (Captura captura : capturas) {
+                
+                String nombre = pokedex.getNombrePokemon(captura.getNum_pokemon());
+                if (nombre!=null)
+                {
+                    System.out.println(nombre + "-" + captura.getCP());
+                }
+                
+            }
+            System.out.println("Tienes " + capturas.size() + " pokemons");
+        } catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }    
+    
+    
+    
+    
     private void listarTodosPokemons() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
@@ -248,8 +312,8 @@ public class PokemonGo {
 
             if (entrenadores.existeEntrenador(nombre))
             { //existeix
-                Entrenador existe = entrenadores.devolverEntrenador(nombre);
-                if (existe.getPassword().equals(contrasenya))
+                login = entrenadores.devolverEntrenador(nombre);
+                if (login.getPassword().equals(contrasenya))
                 {
                     System.out.println("Bienvenido de nuevo " + nombre);
                     return true;
@@ -265,6 +329,7 @@ public class PokemonGo {
                 //si no existeix
                 Entrenador alta = new Entrenador(nombre, contrasenya);
                 entrenadores.altaEntrenador(alta);
+                login = entrenadores.devolverEntrenador(nombre);
                 System.out.println("Usuario nuevo dado de alta");
                 return true;
                 
@@ -309,14 +374,51 @@ public class PokemonGo {
                              cazarPokemon();
                              break;
                          case 7:
-                             listarMochila();
+                            //listarMochila();
+                             listarMochilaOrdenada();
                              break;
                          case 8:
                              listarTodosPokemons();
                              break;
-
                      } 
                  }while(!exit); 
     }
-        
+ 
+   public boolean mostrar_pantalla(List<String> lineas) {
+    Random rd = new Random();
+    int min = 1, max = 10, range = max - min + 1;
+    int num = rd.nextInt(range) + min;
+    boolean esShiny = false;
+    
+    switch (num) {
+        case 8:
+            System.out.println("HAS ENCONTRADO UN SHINY!");
+            for (String linea : lineas) {
+                System.out.println(ColoresUtilitarios.GREEN + linea + ColoresUtilitarios.RESET);
+            }
+            esShiny = true;
+            break;
+        case 9:
+            System.out.println("HAS ENCONTRADO UN SHINY!");
+            for (String linea : lineas) {
+                System.out.println(ColoresUtilitarios.RED + linea + ColoresUtilitarios.RESET);
+            }
+            esShiny = true;
+            break;
+        case 10:
+            System.out.println("HAS ENCONTRADO UN SHINY!");
+            for (String linea : lineas) {
+                System.out.println(ColoresUtilitarios.BLUE + linea + ColoresUtilitarios.RESET);
+            }
+            esShiny = true;
+            break;
+        default:
+            for (String linea : lineas) {
+                System.out.println(linea);
+            }
+            break;
+    }
+    
+    return esShiny;
+}
 }

@@ -34,7 +34,13 @@ PRIMARY KEY (`num`)
 INSERT INTO `pokedex` ( `num`, `name`, `type`) 
 VALUES
 (1,UPPER('Bulbasur'), 'planta'),
-(5,UPPER('Charmeleon'), 'fuego');
+(2,UPPER('charizard'), 'fuego'),
+(3,UPPER('charmaleon'), 'fuego'),
+(4,UPPER('charmander'), 'fuego'),
+(5,UPPER('ivy'), 'normal'),
+(6,UPPER('pikachu'), 'electrico'),
+(7,UPPER('Venusaur'), 'fuego'),
+(25,UPPER('Charmeleon'), 'fuego');
 -- Create table 'mochila'
 CREATE TABLE `mochila` (
 `id_entrenador` INT(4) NOT NULL , 
